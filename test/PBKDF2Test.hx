@@ -108,20 +108,6 @@ class PBKDF2Test
     {
       Assert.areEqual("6e88be8bad7eae9d9e10aa061224034fed48d03f", str);
     }
-    
-    @AsyncTest
-    public function asyncPBKDF2Status(factory:AsyncFactory):Void
-    {
-      var handler:Dynamic = factory.createHandler(this, onAsyncPBKDF2Status, 5000);
-      // timer = Timer.delay(handler, 200);
-      PBKDF2.encodeAsync("password", "salt", 1000, 20, onAsyncPBKDF2Complete, handler);
-    }
-    
-    private function onAsyncPBKDF2Status(progress:Float):Void
-    {
-      Assert.isTrue(0 <= progress);
-      Assert.isTrue(progress <= 100);
-    }
   #end
 
 }

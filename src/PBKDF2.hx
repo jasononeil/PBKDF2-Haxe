@@ -1,26 +1,23 @@
-/*
- * Haxe implementation of Password-Based Key Derivation Function 2
- * (PBKDF2) as defined in RFC 2898.
- * Version 1.1
- * 
- * Jason O'Neil
- *
- * Distributed under the BSD license
- * 
- * Derivations / Attribution:
- * 
- * Derived from http://code.google.com/p/as3-pbkdf2/
- * jeesmon@gmail.com
- * 
- * Which in turn, was derived from: 
- * 
- * Copyright (c) 2007, Parvez Anandam
- * parvez.anandam@cern.ch
- * http://anandam.name/pbkdf2
- *
- * (Uses Paul Johnston's excellent SHA-1 JavaScript library sha1.js)
- * Thanks to Felix Gartsman for pointing out a bug in version 1.0
- */
+/****
+* Copyright (c) 2012 Parvez Anandam, jeesmon@gmail.com, Jason O'Neil
+* All rights reserved.
+* 
+* See README for how the Haxe version of this library was derived
+* and who the respective copyrights belong to.
+* 
+* Redistribution and use in source and binary forms are permitted
+* provided that the above copyright notice and this paragraph are
+* duplicated in all such forms and that any documentation,
+* advertising materials, and other materials related to such
+* distribution and use acknowledge that the software was developed
+* by the <organization>.  The name of the
+* University may not be used to endorse or promote products derived
+* from this software without specific prior written permission.
+* THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+* IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+* 
+****/
 
 class PBKDF2
 {
@@ -34,10 +31,10 @@ class PBKDF2
 
     // Async is only available on platforms that support haxe.Timer
     #if (flash8 || flash || js || cs || java)
-      public static function encodeAsync(value:String, salt:String, iterations:Int = 1000, ?numBytes:Int = 512, resultFn:String->Void, ?updateFn:Float->Void)
+      public static function encodeAsync(value:String, salt:String, iterations:Int = 1000, ?numBytes:Int = 512, resultFn:String->Void)
       {
         var pbkdf2 = new PBKDF2(value, salt, iterations, numBytes);
-        haxe.Timer.delay(function() { pbkdf2.deriveKey(resultFn, updateFn); }, 0);
+        haxe.Timer.delay(function() { pbkdf2.deriveKey(resultFn); }, 0);
       }
     #end
     
