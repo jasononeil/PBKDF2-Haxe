@@ -1,6 +1,7 @@
 # Compiled files
 build/
 report/
+bin/
 
 # Editor files
 *.sublime-*
