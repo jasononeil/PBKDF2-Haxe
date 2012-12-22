@@ -30,13 +30,13 @@ To install from the latest GIT, or from a fork:
 Usage
 -----
 
-```haxe
+```
 var str = PBKDF2.encode(pass, salt, numIterations, numBytes);
 ```
 
 It's best to use a different salt for each unique password... Here I use the helper from the [Random](https://github.com/jasononeil/hxrandom) haxelib.
 
-```haxe
+```
 user = new User();
 user.username = "jason";
 user.salt = Random.string(20);
@@ -47,7 +47,7 @@ user.password = PBKDF2.encode("password", user.salt, 1000, 20);
 
 On targets that support haxe.Timer (flash8, flash, js, cs, java) you can use the Async version:
 
-```haxe
+```
 var onComplete = function(str:String) {
 	trace ("Hash is " + str);
 }
