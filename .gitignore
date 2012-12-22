@@ -1,0 +1,6 @@
+# Compiled files
+build/
+report/
+
+# Editor files
+*.sublime-*
