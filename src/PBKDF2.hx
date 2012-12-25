@@ -21,6 +21,7 @@
 
 class PBKDF2
 {
+
   // The algorithm does not work on Flash 8
   #if !flash8
 
@@ -30,7 +31,7 @@ class PBKDF2
         var pbkdf2 = new PBKDF2(value, salt, iterations, numBytes);
         return pbkdf2.deriveKey();
       #else 
-        return runPBKDF2(value, salt, iterations, numBytes);
+        return pbkdf2("sha1", value, salt, iterations, numBytes, false);
       #end 
     }
     
@@ -43,12 +44,80 @@ class PBKDF2
       }
     #end
 
-    // PHP uses an extern instead...
-    #if php 
-      static function __init__():Void {
-          untyped __call__("require_once", "pbkdf2.php");
+    // I'm going to port this code to Haxe so we don't have to worry about including an extern.
+    #if php
+
+      // Original PHP Code - See README for attribution
+      // function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output = false)
+      // {
+      //     $algorithm = strtolower($algorithm);
+      //     if(!in_array($algorithm, hash_algos(), true))
+      //         die("PBKDF2 ERROR: Invalid hash algorithm.");
+      //     if($count <= 0 || $key_length <= 0)
+      //         die("PBKDF2 ERROR: Invalid parameters.");
+
+      //     $hash_length = strlen(hash($algorithm, "", true));
+      //     $block_count = ceil($key_length / $hash_length);
+
+      //     $output = "";
+      //     for($i = 1; $i <= $block_count; $i++) {
+      //         // $i encoded as 4 bytes, big endian.
+      //         $last = $salt . pack("N", $i);
+      //         // first iteration
+      //         $last = $xorsum = hash_hmac($algorithm, $last, $password, true);
+      //         // perform the other $count - 1 iterations
+      //         for ($j = 1; $j < $count; $j++) {
+      //             $xorsum ^= ($last = hash_hmac($algorithm, $last, $password, true));
+      //         }
+      //         $output .= $xorsum;
+      //     }
+
+      //     if($raw_output)
+      //         return substr($output, 0, $key_length);
+      //     else
+      //         return bin2hex(substr($output, 0, $key_length));
+      // }
+      static function pbkdf2(algorithm:String, password:String, salt:String, count:Int, key_length:Int, raw_output = false):String
+      {
+        algorithm = algorithm.toLowerCase();
+        if ((untyped __call__("in_array", algorithm, untyped __php__("hash_algos()"), true)) == false)
+            untyped __call__("die", "PBKDF2 ERROR: Invalid hash algorithm.");
+        if (count <= 0 || key_length <= 0)
+            untyped __call__("die", "PBKDF2 ERROR: Invalid parameters.");
+
+        var testHash:String = untyped __call__("hash", algorithm, "", true);
+        var hash_length = testHash.length;
+        var block_count = Math.ceil(key_length / hash_length);
+
+        var output = "";
+
+        //for($i = 1; $i <= $block_count; $i++) {
+        var i = 1;
+        while (i <= block_count)
+        {
+            // $i encoded as 4 bytes, big endian.
+            var last = salt + untyped __call__("pack", "N", i);
+            // first iteration
+            var xorsum = untyped __call__("hash_hmac", algorithm, last, password, true);
+            last = xorsum;
+
+            // perform the other $count - 1 iterations
+            //for ($j = 1; $j < $count; $j++) 
+            var j = 1;
+            while (j < count)
+            {
+                untyped __php__("$xorsum ^= ($last = hash_hmac($algorithm, $last, $password, true))");
+                j++;
+            }
+            output = output + xorsum;
+            i++;
+        }
+
+        if(raw_output)
+            return untyped __call__("substr", output, 0, key_length);
+        else
+            return untyped __call__("bin2hex", __call__("substr", output, 0, key_length));
       }
-      public static inline function runPBKDF2(password:String, salt:String, count:Int, key_length:Int):String return untyped __call__("pbkdf2", "sha1", password, salt, count, key_length, false)
     #else
 
       // Remember the password and salt
