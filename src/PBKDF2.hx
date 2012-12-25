@@ -21,14 +21,19 @@
 
 class PBKDF2
 {
+  // The algorithm does not work on Flash 8
   #if !flash8
 
     public static function encode(value:String, salt:String, iterations:Int = 1000, ?numBytes:Int = 512)
     {
-      var pbkdf2 = new PBKDF2(value, salt, iterations, numBytes);
-      return pbkdf2.deriveKey();
+      #if !php 
+        var pbkdf2 = new PBKDF2(value, salt, iterations, numBytes);
+        return pbkdf2.deriveKey();
+      #else 
+        return runPBKDF2(value, salt, iterations, numBytes);
+      #end 
     }
-
+    
     // Async is only available on platforms that support haxe.Timer
     #if (flash8 || flash || js || cs || java)
       public static function encodeAsync(value:String, salt:String, iterations:Int = 1000, ?numBytes:Int = 512, resultFn:String->Void)
@@ -37,190 +42,205 @@ class PBKDF2
         haxe.Timer.delay(function() { pbkdf2.deriveKey(resultFn); }, 0);
       }
     #end
-    
-    // Remember the password and salt
-    var m_bpassword:Array<Int>;
-    var m_salt:String;
-    // Total number of iterations
-    var m_total_iterations:Int;
-    // Run iterations in chunks instead of all at once, so as to not block.
-    // Define size of chunk here; adjust for slower or faster machines if necessary.
-    var m_iterations_in_chunk:Int;
-    // Iteration counter
-    var m_iterations_done:Int;
-    // Key length, as number of bytes
-    var m_key_length:Int;
-    // The length (number of bytes) of the output of the pseudo-random function.
-    // Since HMAC-SHA1 is the standard, and what is used here, it's 20 bytes.
-    var m_hash_length:Int;
-    // Number of hash-sized blocks in the derived key (called 'l' in RFC2898)
-    var m_total_blocks:Int;
-    // Start computation with the first block
-    var m_current_block:Int;
-    // Used in the HMAC-SHA1 computations
-    var m_ipad:Array<Int>;
-    var m_opad:Array<Int>;
 
-    // This is where the result of the iterations gets sotred
-    var m_buffer:Array<Int>;
-
-    // The result
-    var m_key:String;
-
-    // The function to call with the result
-    var m_result_func:String->Void;
-
-    // The function to call with status after computing every chunk
-    var m_status_func:Float->Void;
-
-    var m_hash:Array<Int>;
-
-
-    /*
-      * The four arguments to the constructor of the PBKDF2 object are
-      * the password, salt, number of iterations and number of bytes in
-      * generated key. This follows the RFC 2898 definition: PBKDF2 (P, S, c, dkLen)
-      *
-      * The method deriveKey takes two parameters, both callback functions:
-      * the first is used to provide status on the computation, the second
-      * is called with the result of the computation (the generated key in hex).
-      *
-      * Example of use:
-      *
-      *    <script src="sha1.js"></script>
-      *    <script src="pbkdf2.js"></script>
-      *    <script>
-      *    var mypbkdf2 = new PBKDF2("mypassword", "saltines", 1000, 16);
-      *    var status_callback = function(percent_done) {
-      *        document.getElementById("status").innerHTML = "Computed " + percent_done + "%"};
-      *    var result_callback = function(key) {
-      *        document.getElementById("status").innerHTML = "The derived key is: " + key};
-      *    mypbkdf2.deriveKey(status_callback, result_callback);
-      *    </script>
-      *    <div id="status"></div>
-      *
-    */
-    public function new(password:String, salt:String, num_iterations:Int, num_bytes:Int)
-    {
-      m_bpassword = SHA1Helpers.str2binb(password);
-      m_salt = salt;
-      m_total_iterations = num_iterations;
-      m_iterations_in_chunk = 10;
-      m_iterations_done = 0;
-      m_key_length = num_bytes;
-      m_hash_length = 20;
-      m_total_blocks = Math.ceil(m_key_length/m_hash_length);
-      m_current_block = 1;
-      m_ipad = new Array();
-      m_opad = new Array();
-      m_buffer = [0x0,0x0,0x0,0x0,0x0];
-      m_key = "";
-      m_hash = new Array();
-
-      // Set up the HMAC-SHA1 computations
-      if (m_bpassword.length > 16) m_bpassword = SHA1Helpers.core_sha1(m_bpassword, password.length * SHA1Helpers.chrsz);
-
-      //for(var i:Int = 0; i < 16; ++i)
-      var i = 0;
-      while (i < 16)
-      {
-        m_ipad[i] = m_bpassword[i] ^ 0x36363636;
-        m_opad[i] = m_bpassword[i] ^ 0x5C5C5C5C;
-        ++i;
+    // PHP uses an extern instead...
+    #if php 
+      static function __init__():Void {
+          untyped __call__("require_once", "pbkdf2.php");
       }
-    }
+      public static inline function runPBKDF2(password:String, salt:String, count:Int, key_length:Int):String return untyped __call__("pbkdf2", "sha1", password, salt, count, key_length, false)
+    #else
 
-    // Starts the computation
-    public function deriveKey(?result_callback:String->Void, ?status_callback:Float->Void)
-    {
-      m_status_func = status_callback;
-      m_result_func = result_callback;
-      var result = do_PBKDF2_iterations();
-      return result;
-    }
+      // Remember the password and salt
+      var m_bpassword:Array<Int>;
+      var m_salt:String;
+      // Total number of iterations
+      var m_total_iterations:Int;
+      // Run iterations in chunks instead of all at once, so as to not block.
+      // Define size of chunk here; adjust for slower or faster machines if necessary.
+      var m_iterations_in_chunk:Int;
+      // Iteration counter
+      var m_iterations_done:Int;
+      // Key length, as number of bytes
+      var m_key_length:Int;
+      // The length (number of bytes) of the output of the pseudo-random function.
+      // Since HMAC-SHA1 is the standard, and what is used here, it's 20 bytes.
+      var m_hash_length:Int;
+      // Number of hash-sized blocks in the derived key (called 'l' in RFC2898)
+      var m_total_blocks:Int;
+      // Start computation with the first block
+      var m_current_block:Int;
+      // Used in the HMAC-SHA1 computations
+      var m_ipad:Array<Int>;
+      var m_opad:Array<Int>;
+
+      // This is where the result of the iterations gets sotred
+      var m_buffer:Array<Int>;
+
+      // The result
+      var m_key:String;
+
+      // The function to call with the result
+      var m_result_func:String->Void;
+
+      // The function to call with status after computing every chunk
+      var m_status_func:Float->Void;
+
+      var m_hash:Array<Int>;
 
 
-    // The workhorse
-    function do_PBKDF2_iterations()
-    {
-      var iterations:Int = m_iterations_in_chunk;
-      if (m_total_iterations - m_iterations_done < m_iterations_in_chunk)
-      { 
-        iterations = m_total_iterations - m_iterations_done; 
-      }
-      
-      //for(var i:Int=0; i<iterations; ++i)
-      var i = 0;
-      while (i < iterations)
+      /*
+        * The four arguments to the constructor of the PBKDF2 object are
+        * the password, salt, number of iterations and number of bytes in
+        * generated key. This follows the RFC 2898 definition: PBKDF2 (P, S, c, dkLen)
+        *
+        * The method deriveKey takes two parameters, both callback functions:
+        * the first is used to provide status on the computation, the second
+        * is called with the result of the computation (the generated key in hex).
+        *
+        * Example of use:
+        *
+        *    <script src="sha1.js"></script>
+        *    <script src="pbkdf2.js"></script>
+        *    <script>
+        *    var mypbkdf2 = new PBKDF2("mypassword", "saltines", 1000, 16);
+        *    var status_callback = function(percent_done) {
+        *        document.getElementById("status").innerHTML = "Computed " + percent_done + "%"};
+        *    var result_callback = function(key) {
+        *        document.getElementById("status").innerHTML = "The derived key is: " + key};
+        *    mypbkdf2.deriveKey(status_callback, result_callback);
+        *    </script>
+        *    <div id="status"></div>
+        *
+      */
+      function new(password:String, salt:String, num_iterations:Int, num_bytes:Int)
       {
-        // compute HMAC-SHA1
-        if (m_iterations_done == 0)
+        m_bpassword = SHA1Helpers.str2binb(password);
+        m_salt = salt;
+        m_total_iterations = num_iterations;
+        m_iterations_in_chunk = 10;
+        m_iterations_done = 0;
+        m_key_length = num_bytes;
+        m_hash_length = 20;
+        m_total_blocks = Math.ceil(m_key_length/m_hash_length);
+        m_current_block = 1;
+        m_ipad = new Array();
+        m_opad = new Array();
+        m_buffer = [0x0,0x0,0x0,0x0,0x0];
+        m_key = "";
+        m_hash = new Array();
+
+        // Set up the HMAC-SHA1 computations
+        if (m_bpassword.length > 16) m_bpassword = SHA1Helpers.core_sha1(m_bpassword, password.length * SHA1Helpers.chrsz);
+
+        //for(var i:Int = 0; i < 16; ++i)
+        var i = 0;
+        while (i < 16)
         {
-          var salt_block:String = m_salt +
-                String.fromCharCode(m_current_block >> 24 & 0xF) +
-                String.fromCharCode(m_current_block >> 16 & 0xF) +
-                String.fromCharCode(m_current_block >>  8 & 0xF) +
-                String.fromCharCode(m_current_block       & 0xF);
-          m_hash = SHA1Helpers.core_sha1(m_ipad.concat(SHA1Helpers.str2binb(salt_block)),
-                                          512 + salt_block.length * 8);
-          m_hash = SHA1Helpers.core_sha1(m_opad.concat(m_hash), 512 + 160);
+          #if neko 
+            var m_bpasswordValue = (m_bpassword[i] != null) ? m_bpassword[i] : 0;
+            m_ipad[i] = m_bpasswordValue ^ 0x36363636;
+            m_opad[i] = m_bpasswordValue ^ 0x5C5C5C5C;
+          #else 
+            m_ipad[i] = m_bpassword[i] ^ 0x36363636;
+            m_opad[i] = m_bpassword[i] ^ 0x5C5C5C5C;
+          #end 
+          ++i;
         }
-        else
-        {
-          m_hash = SHA1Helpers.core_sha1(m_ipad.concat(m_hash),
-            512 + m_hash.length * 32);
-          m_hash = SHA1Helpers.core_sha1(m_opad.concat(m_hash), 512 + 160);
-        }
-        //for(var j:Int=0; j<m_hash.length; ++j)
-        var j = 0;
-        while (j < m_hash.length)
-        {
-          m_buffer[j] ^= m_hash[j];
-          ++j;
-        }
-        m_iterations_done++;
-        ++i;
-      }
-    
-      // Call the status callback function
-      if (m_status_func != null)
-      {
-        m_status_func( (m_current_block - 1 + m_iterations_done/m_total_iterations) / m_total_blocks * 100);
       }
 
-      if (m_iterations_done < m_total_iterations)
+      // Starts the computation
+      function deriveKey(?result_callback:String->Void, ?status_callback:Float->Void)
       {
+        m_status_func = status_callback;
+        m_result_func = result_callback;
         var result = do_PBKDF2_iterations();
         return result;
       }
-      else
+
+
+      // The workhorse
+      function do_PBKDF2_iterations()
       {
-        if (m_current_block < m_total_blocks)
+        var iterations:Int = m_iterations_in_chunk;
+        if (m_total_iterations - m_iterations_done < m_iterations_in_chunk)
+        { 
+          iterations = m_total_iterations - m_iterations_done; 
+        }
+        
+        //for(var i:Int=0; i<iterations; ++i)
+        var i = 0;
+        while (i < iterations)
         {
-          // Compute the next block (T_i in RFC 2898)
-          m_key += SHA1Helpers.binb2hex(m_buffer);
-          m_current_block++;
-          m_buffer = [0x0,0x0,0x0,0x0,0x0];
-          m_iterations_done = 0;
+          // compute HMAC-SHA1
+          if (m_iterations_done == 0)
+          {
+            var salt_block:String = m_salt +
+                  String.fromCharCode(m_current_block >> 24 & 0xF) +
+                  String.fromCharCode(m_current_block >> 16 & 0xF) +
+                  String.fromCharCode(m_current_block >>  8 & 0xF) +
+                  String.fromCharCode(m_current_block       & 0xF);
+            m_hash = SHA1Helpers.core_sha1(m_ipad.concat(SHA1Helpers.str2binb(salt_block)),
+                                            512 + salt_block.length * 8);
+            m_hash = SHA1Helpers.core_sha1(m_opad.concat(m_hash), 512 + 160);
+          }
+          else
+          {
+            m_hash = SHA1Helpers.core_sha1(m_ipad.concat(m_hash),
+              512 + m_hash.length * 32);
+            m_hash = SHA1Helpers.core_sha1(m_opad.concat(m_hash), 512 + 160);
+          }
+          //for(var j:Int=0; j<m_hash.length; ++j)
+          var j = 0;
+          while (j < m_hash.length)
+          {
+            m_buffer[j] ^= m_hash[j];
+            ++j;
+          }
+          m_iterations_done++;
+          ++i;
+        }
+      
+        // Call the status callback function
+        if (m_status_func != null)
+        {
+          m_status_func( (m_current_block - 1 + m_iterations_done/m_total_iterations) / m_total_blocks * 100);
+        }
+
+        if (m_iterations_done < m_total_iterations)
+        {
           var result = do_PBKDF2_iterations();
           return result;
         }
         else
         {
-          // We've computed the final block T_l; we're done.
-          var tmp:String = SHA1Helpers.binb2hex(m_buffer);
-          m_key += tmp.substr(0, (m_key_length - (m_total_blocks - 1) * m_hash_length) * 2 );
-          
-          // Call the result callback function
-          if (m_result_func != null)
+          if (m_current_block < m_total_blocks)
           {
-            m_result_func(m_key);
+            // Compute the next block (T_i in RFC 2898)
+            m_key += SHA1Helpers.binb2hex(m_buffer);
+            m_current_block++;
+            m_buffer = [0x0,0x0,0x0,0x0,0x0];
+            m_iterations_done = 0;
+            var result = do_PBKDF2_iterations();
+            return result;
           }
-          return m_key;
+          else
+          {
+            // We've computed the final block T_l; we're done.
+            var tmp:String = SHA1Helpers.binb2hex(m_buffer);
+            m_key += tmp.substr(0, (m_key_length - (m_total_blocks - 1) * m_hash_length) * 2 );
+            
+            // Call the result callback function
+            if (m_result_func != null)
+            {
+              m_result_func(m_key);
+            }
+            return m_key;
+          }
         }
       }
-    }
-  #end
+    #end // PHP
+  #end // Flash8
 }
 
 private class SHA1Helpers
@@ -258,7 +278,12 @@ private class SHA1Helpers
   public static function core_sha1(x:Array<Int>, len:Int):Array<Int>
   {
     /* append padding */
-    x[len >> 5] |= 0x80 << (24 - len % 32);
+    #if neko 
+      var xValue = (x[len >> 5] != null) ? x[len >> 5] : 0;
+      x[len >> 5] = xValue | (0x80 << (24 - len % 32));
+    #else 
+      x[len >> 5] |= 0x80 << (24 - len % 32);
+    #end 
     x[((len + 64 >> 9) << 4) + 15] = len;
    
     var w:Array<Int> = new Array();
@@ -281,8 +306,23 @@ private class SHA1Helpers
       //for(var j:Int = 0; j < 80; j++)
       for (j in 0...80)
       {
-        if(j < 16) w[j] = x[i + j];
-        else w[j] = rol(w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16], 1);
+        if(j < 16) 
+        {
+          w[j] = x[i + j];
+        }
+        else 
+        {
+          #if neko 
+            var v3 = (w[j-3] != null) ? w[j-3] : 0;
+            var v8 = (w[j-8] != null) ? w[j-8] : 0;
+            var v14 = (w[j-14] != null) ? w[j-14] : 0;
+            var v16 = (w[j-16] != null) ? w[j-16] : 0;
+            var value = v3 ^ v8 ^ v14 ^ v16;
+            w[j] = rol(value, 1);
+          #else 
+            w[j] = rol(w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16], 1);
+          #end 
+        }
         var t:Int = safe_add(safe_add(rol(a, 5), sha1_ft(j, b, c, d)),
                  safe_add(safe_add(e, w[j]), sha1_kt(j)));
         e = d;
@@ -352,6 +392,10 @@ private class SHA1Helpers
    */
   public static function safe_add(x:Int, y:Int):Int
   {
+    #if neko 
+      if (x == null) x = 0;
+      if (y == null) y = 0;
+    #end 
     var lsw:Int = (x & 0xFFFF) + (y & 0xFFFF);
     var msw:Int = (x >> 16) + (y >> 16) + (lsw >> 16);
     return (msw << 16) | (lsw & 0xFFFF);
@@ -377,7 +421,17 @@ private class SHA1Helpers
     var i = 0;
     while (i < str.length * chrsz)
     {
-      bin[i>>5] |= (str.charCodeAt(Std.int(i / chrsz)) & mask) << (32 - chrsz - i%32);
+      #if neko
+        var x = (str.charCodeAt(Std.int(i / chrsz)) & mask) << (32 - chrsz - i%32);
+        var y = bin[i>>5];
+        
+        if (x == null) x = 0;
+        if (y == null) y = 0;
+        
+        bin[i>>5] = y | x;
+      #else 
+        bin[i>>5] |= (str.charCodeAt(Std.int(i / chrsz)) & mask) << (32 - chrsz - i%32);
+      #end 
       i = i + chrsz;
     }
     return bin;
