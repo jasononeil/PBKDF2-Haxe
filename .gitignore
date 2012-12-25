@@ -2,6 +2,9 @@
 build/
 report/
 bin/
+simpletest/*.n
+simpletest/php/*
+simpletest/cpp/*
 
 # Editor files
 *.sublime-*

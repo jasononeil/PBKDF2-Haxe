@@ -1,0 +1,23 @@
+-neko SimpleTest.hx.n
+-cp ../src/ 
+-lib munit
+-main SimpleTest
+-D neko_v2
+
+--next
+
+-php php/
+--php-front SimpleTest.hx.php
+-cp ../src/
+-lib munit
+-main SimpleTest
+
+--next 
+
+-main SimpleTest
+-cp ../src
+-lib munit
+-D HXCPP_M64
+-cpp cpp/
+
+
