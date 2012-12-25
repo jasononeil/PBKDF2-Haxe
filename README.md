@@ -3,7 +3,7 @@ PBKDF2 for Haxe
 
 PBKDF2 (Password-Based Key Derivation Function 2) is a key derivation function that you can read all about [on Wikipedia](http://en.wikipedia.org/wiki/PBKDF2).
 
-Basically, it lets you do a hash similar to MD5 or SHA1, but with a salt, and it can repeat thousands of times to make it harder to crack - the longer it takes to generate the key the longer it will take to crack.  Anyway, it is a good way to store user passwords.  Even big names like DJango use it by default.
+Basically, it lets you do a hash similar to MD5 or SHA1, but with a salt, and it can repeat thousands of times to make it harder to crack - the longer it takes to generate the key the longer it will take to crack.  Anyway, it is a good way to store user passwords.  Even big frameworks like Django use it by default.
 
 Installation
 ------------
@@ -61,7 +61,7 @@ Does not work on Flash8 (generates different numbers, have not debugged yet).
 Attribution & Licence
 ---------------------
 
-This is a copy-of-a-copy-of-a-derivative, combined with an extern:
+This is a copy-of-a-copy-of-a-derivative, and a separate port:
 
 1. The Javascript version: Copyright (c) 2007, Parvez Anandam  
 parvez.anandam@cern.ch  
@@ -78,9 +78,9 @@ BSD License
 https://github.com/jasononeil/PBKDF2-Haxe  
 BSD license
 
-3. The PHP implementation uses a simple extern which was derived from:  
+3. The PHP implementation was derived from:  
 https://defuse.ca/php-pbkdf2.htm havoc AT defuse.ca  
-Released under Public Domain.  Haxe externs written by Jason O'Neil.
+Released under Public Domain.  Haxe translation by Jason O'Neil.
 
 See the LICENSE.txt file for the full license.
 
