@@ -58,7 +58,7 @@ PBKDF2.encodeAsync("password", "salt", 1000, 20, onComplete);
 Attribution & Licence
 ---------------------
 
-This is a copy-of-a-copy-of-a-copy:
+This is a copy-of-a-copy-of-a-derivative, combined with an extern:
 
 1. The Javascript version: Copyright (c) 2007, Parvez Anandam  
 parvez.anandam@cern.ch  
@@ -75,7 +75,11 @@ BSD License
 https://github.com/jasononeil/PBKDF2-Haxe  
 BSD license
 
-See the LICENSE file for the full license.
+3. The PHP implementation uses a simple extern which was derived from:  
+https://defuse.ca/php-pbkdf2.htm havoc AT defuse.ca  
+Released under Public Domain.  Haxe externs written by Jason O'Neil.
+
+See the LICENSE.txt file for the full license.
 
 Making Changes
 --------------
