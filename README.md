@@ -5,15 +5,6 @@ PBKDF2 (Password-Based Key Derivation Function 2) is a key derivation function t
 
 Basically, it lets you do a hash similar to MD5 or SHA1, but with a salt, and it can repeat thousands of times to make it harder to crack - the longer it takes to generate the key the longer it will take to crack.  Anyway, it is a good way to store user passwords.  Even big names like DJango use it by default.
 
-Platform Support
-----------------
-
-Currently tested on Flash9, JS, CPP.  Probably also works on Java, C# and PHP though I haven't checked.
-
-Does not work on Flash8 (generates different numbers, have not debugged).  
-
-Does not work on Neko yet (31bit Integer issue...)
-
 Installation
 ------------
 
@@ -54,6 +45,18 @@ var onComplete = function(str:String) {
 
 PBKDF2.encodeAsync("password", "salt", 1000, 20, onComplete);
 ```
+
+Platform Support
+----------------
+
+Currently tested on Flash9, JS, CPP.  Works on PHP, but our test suite doesn't run.  I did some manual tests to verify though.
+
+Neko only works with v2.0, so you'll need to install the release candidate or latest SVN.  You'll also need Haxe3 (latest SVN), and you will need to use the `-D neko_v2` command line option.  It will not work on Neko v1.8, because the algorithm relies heavily on Bitwise Integer operations and neko v1 does not support 32bit Integers, so a lot of things were broken that I have not debugged.  
+*Currently, neko does work but runs incredibly slowly - 60 times slower than JS and 120 times slower than CPP.  Some profiling will definitely be needed.*
+
+No idea if it works on Java or C#, but quite possibly - if their Integer operations and arrays behave similarly enough.
+
+Does not work on Flash8 (generates different numbers, have not debugged yet).  
 
 Attribution & Licence
 ---------------------
