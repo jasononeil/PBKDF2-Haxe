@@ -1,5 +1,5 @@
 /****
-* Copyright (c) 2012 Parvez Anandam, jeesmon@gmail.com, Jason O'Neil
+* Copyright (c) 2013 Parvez Anandam, jeesmon@gmail.com, Jason O'Neil
 * All rights reserved.
 * 
 * See README for how the Haxe version of this library was derived

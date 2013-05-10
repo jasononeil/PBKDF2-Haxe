@@ -5,7 +5,7 @@
   "description": "Haxe implementation of the PBKDF2 Algorithm for password hashing",
   "contributors": ["jason"],
   "releasenote": "Added PHP and Neko support.  Neko runs *really* slowly, but works. PHP is super quick.",
-  "version": "0.2.0.0",
+  "version": "0.2.0",
   "url": "https://github.com/jasononeil/PBKDF2-Haxe",
   "dependencies": {
 
