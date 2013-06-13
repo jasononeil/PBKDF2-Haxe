@@ -1,7 +1,0 @@
-<project name="PBKDF2" url="https://github.com/jasononeil/PBKDF2-Haxe" license="BSD">
-	<user name="jason"/>
-	<tag v="cross" />
-	<tag v="hash" />
-	<description>Haxe implementation of the PBKDF2 Algorithm for password hashing</description>
-	<version name="0.2.0.0">Added PHP and Neko support.  Neko runs *really* slowly, but works. PHP is super quick.</version>
-</project>
