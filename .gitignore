@@ -5,6 +5,7 @@ bin/
 simpletest/*.n
 simpletest/php/*
 simpletest/cpp/*
+*.zip
 
 # Editor files
 *.sublime-*
