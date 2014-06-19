@@ -5,8 +5,8 @@
   "tags": ["cross","hash","auth","crypto","web"],
   "description": "Haxe implementation of the PBKDF2 Algorithm for password hashing",
   "contributors": ["jason"],
-  "releasenote": "Basic packaging changes",
-  "version": "0.2.1",
+  "releasenote": "1.0.0 release (no changes to code).",
+  "version": "1.0.0",
   "url": "https://github.com/jasononeil/PBKDF2-Haxe",
   "dependencies": {
 
