@@ -111,7 +111,7 @@ class PBKDF2
         while (i <= block_count)
         {
             // $i encoded as 4 bytes, big endian.
-            #if #if (haxe_ver >= 4.0)
+             #if (haxe_ver >= 4.0)
             var last = salt + php.Global.pack("N", i);
             // first iteration
             
@@ -129,7 +129,7 @@ class PBKDF2
             var j = 1;
             while (j < count)
             {
-               #if #if (haxe_ver >= 4.0)
+                #if (haxe_ver >= 4.0)
                 php.Syntax.code("$xorsum ^= ($last = hash_hmac({0},{1},{2},{3}))", algorithm, last, password, true);
                #else
                 untyped __php__("$xorsum ^= ($last = hash_hmac($algorithm, $last, $password, true))");
@@ -141,7 +141,7 @@ class PBKDF2
         }
 
         if(raw_output)
-          #if #if (haxe_ver >= 4.0)
+           #if (haxe_ver >= 4.0)
           return php.Global.substr( output, 0, key_length);
             
         else
