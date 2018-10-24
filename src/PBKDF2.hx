@@ -80,12 +80,27 @@ class PBKDF2
       static function pbkdf2(algorithm:String, password:String, salt:String, count:Int, key_length:Int, raw_output = false):String
       {
         algorithm = algorithm.toLowerCase();
+        
+
+        #if (haxe_ver >= 4.0)
+
+        if (php.Global.in_array( algorithm, php.Syntax.code("hash_algos()"), true) == false)
+            php.Global.die("PBKDF2 ERROR: Invalid hash algorithm.");
+           
+        if (count <= 0 || key_length <= 0)
+        php.Global.die("PBKDF2 ERROR: Invalid parameters.");
+            
+
+        var testHash:String = php.Global.hash( algorithm, "", true);
+		
+		  #else
         if ((untyped __call__("in_array", algorithm, untyped __php__("hash_algos()"), true)) == false)
             untyped __call__("die", "PBKDF2 ERROR: Invalid hash algorithm.");
         if (count <= 0 || key_length <= 0)
             untyped __call__("die", "PBKDF2 ERROR: Invalid parameters.");
 
         var testHash:String = untyped __call__("hash", algorithm, "", true);
+      #end
         var hash_length = testHash.length;
         var block_count = Math.ceil(key_length / hash_length);
 
@@ -96,9 +111,17 @@ class PBKDF2
         while (i <= block_count)
         {
             // $i encoded as 4 bytes, big endian.
+             #if (haxe_ver >= 4.0)
+            var last = salt + php.Global.pack("N", i);
+            // first iteration
+            
+            var xorsum = php.Syntax.code("hash_hmac({0},{1},{2},{3})", algorithm, last, password, true);
+
+            #else
             var last = salt + untyped __call__("pack", "N", i);
             // first iteration
             var xorsum = untyped __call__("hash_hmac", algorithm, last, password, true);
+            #end
             last = xorsum;
 
             // perform the other $count - 1 iterations
@@ -106,7 +129,11 @@ class PBKDF2
             var j = 1;
             while (j < count)
             {
+                #if (haxe_ver >= 4.0)
+                php.Syntax.code("$xorsum ^= ($last = hash_hmac({0},{1},{2},{3}))", algorithm, last, password, true);
+               #else
                 untyped __php__("$xorsum ^= ($last = hash_hmac($algorithm, $last, $password, true))");
+              #end
                 j++;
             }
             output = output + xorsum;
@@ -114,9 +141,16 @@ class PBKDF2
         }
 
         if(raw_output)
-            return untyped __call__("substr", output, 0, key_length);
+           #if (haxe_ver >= 4.0)
+          return php.Global.substr( output, 0, key_length);
+            
+        else
+            return php.Global.bin2hex( php.Global.substr( output, 0, key_length));
+            #else
+      return untyped __call__("substr", output, 0, key_length);
         else
             return untyped __call__("bin2hex", __call__("substr", output, 0, key_length));
+            #end
       }
     #else
 
